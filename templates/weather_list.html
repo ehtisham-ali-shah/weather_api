@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather Data</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script>
+        function searchWeather() {
+            var input = document.getElementById("searchInput").value;
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    updateTable(JSON.parse(this.responseText));
+                }
+            };
+            xhttp.open("GET", "/search_weather?query=" + input, true);
+            xhttp.send();
+        }
+    </script>
+</head>
+<body>
+    <input type="text" id="searchInput" placeholder="Search for locations..">
+    <button onclick="searchWeather()">Search</button>
+
+    <table id="weatherTable">
+        <tr>
+            <th>Location (Lat, Lon)</th>
+            <th>Min Temperature</th>
+            <th>Max Temperature</th>
+            <th>Wind Speed</th>
+            <th>Wind Direction</th>
+            <th>Sunrise</th>
+            <th>Sunset</th>
+        </tr>
+        {% for entry in weather_data %}
+            <tr>
+                <td>{{ entry.latitude }}, {{ entry.longitude }}</td>
+                <td>{{ entry.daily.temperature_2m_min[0] }}</td>
+                <td>{{ entry.temperature_2m_max }}</td>
+                <td>{{ entry.wind_speed_10m_max }}</td>
+                <td>{{ entry.wind_direction_10m_dominant }}</td>
+                <td>{{ entry.sunrise }}</td>
+                <td>{{ entry.sunset }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
