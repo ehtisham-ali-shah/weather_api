@@ -3,7 +3,7 @@
 <head>
     <title>Weather Data</title>
     <style>
-        table {
+        /* table {
             width: 100%;
             border-collapse: collapse;
         }
@@ -16,47 +16,92 @@
         }
         th {
             background-color: #f2f2f2;
-        }
+        } */
     </style>
     <script>
-        function searchWeather() {
-            var input = document.getElementById("searchInput").value;
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    updateTable(JSON.parse(this.responseText));
+
+
+        document.addEventListener("DOMContentLoaded", function(event) {
+            var selectedCities = {{ selected_cities | tojson | safe }};
+            console.log('selectedCities', selectedCities);
+            
+            function searchWeather() {
+                var input = document.getElementById("searchInput").value;
+                // var xhttp = new XMLHttpRequest();
+                // xhttp.onreadystatechange = function() {
+                //     if (this.readyState == 4 && this.status == 200) {
+                //         updateTable(JSON.parse(this.responseText));
+                //     }
+                // };
+                // xhttp.open("GET", "/search_weather?query=" + input, true);
+                // xhttp.send();
+            }
+
+            var city_form = document.getElementById("city_form");
+            city_form.addEventListener("submit", function(e){
+                e.preventDefault();
+                var newSelectedCity = document.getElementById('citySelect').value;
+                if (newSelectedCity){
+                     // Construct the new URL with the selected city as a parameter
+                    var newUrl = window.location.pathname + '?cities=' + encodeURIComponent(newSelectedCity);
+                    for (const city of selectedCities) {
+                        newUrl = newUrl+'&cities='+ encodeURIComponent(city)
+                    }
+                    // Reload the page with the updated URL
+                    window.location.href = newUrl;
                 }
-            };
-            xhttp.open("GET", "/search_weather?query=" + input, true);
-            xhttp.send();
-        }
+                
+            });
+        });
     </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 </head>
 <body>
-    <input type="text" id="searchInput" placeholder="Search for locations..">
-    <button onclick="searchWeather()">Search</button>
+    <div class="container d-grid gap-5 mt-5">
+        <div class="mx-auto" style="width: 400px;">
+            <!-- <input type="text" id="searchInput" placeholder="Search for locations.." class="input">
+            <button onclick="searchWeather()">Search</button> -->
+            <form class="row g-3" id="city_form">
+                <div class="col-auto">
+                    <select class="form-select" aria-label="Default select example" id="citySelect">
+                        <option selected>Select other cities to add</option>
+                        {% for city in selectable_cities %}
+                            <option value='{{ city }}'>{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-    <table id="weatherTable">
-        <tr>
-            <th>Location (Lat, Lon)</th>
-            <th>Min Temperature</th>
-            <th>Max Temperature</th>
-            <th>Wind Speed</th>
-            <th>Wind Direction</th>
-            <th>Sunrise</th>
-            <th>Sunset</th>
-        </tr>
-        {% for entry in weather_data %}
-            <tr>
-                <td>{{ entry.latitude }}, {{ entry.longitude }}</td>
-                <td>{{ entry.daily.temperature_2m_min[0] }}</td>
-                <td>{{ entry.temperature_2m_max }}</td>
-                <td>{{ entry.wind_speed_10m_max }}</td>
-                <td>{{ entry.wind_direction_10m_dominant }}</td>
-                <td>{{ entry.sunrise }}</td>
-                <td>{{ entry.sunset }}</td>
-            </tr>
-        {% endfor %}
-    </table>
+                <div class="col-auto">
+                    <button class="btn btn-primary btn-large" type="submit">Add</button>
+                </div>
+            </form>
+        </div>
+
+        <table id="weatherTable" class="table">
+            <thead class="table-dark">
+                <th>City</th>
+                <th>Location (Lat, Lon)</th>
+                <th>Min Temperature</th>
+                <th>Max Temperature</th>
+                <th>Wind Speed</th>
+                <th>Wind Direction</th>
+                <th>Sunrise</th>
+                <th>Sunset</th>
+            </thead>
+            {% for entry in weather_data %}
+                <tr>
+                    <td>{{ entry.city }}</td>
+                    <td>{{ entry.latitude }}, {{ entry.longitude }}</td>
+                    <td>{{ entry.daily.temperature_2m_min[0] }}</td>
+                    <td>{{ entry.daily.temperature_2m_max[0] }}</td>
+                    <td>{{ entry.daily.wind_speed_10m_max[0] }}</td>
+                    <td>{{ entry.daily.wind_direction_10m_dominant[0] }}</td>
+                    <td>{{ entry.daily.sunrise[0] }}</td>
+                    <td>{{ entry.daily.sunset[0] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
 </body>
 </html>
